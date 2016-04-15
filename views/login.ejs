@@ -1,0 +1,341 @@
+<% include header %>
+<script type="text/javascript">
+	$(function() {
+
+    $('#login-form-link').click(function(e) {
+		$("#login-form").delay(100).fadeIn(100);
+ 		$("#register-form").fadeOut(100);
+		$('#register-form-link').removeClass('active');
+		$(this).addClass('active');
+		e.preventDefault();
+	});
+	$('#register-form-link').click(function(e) {
+		$("#register-form").delay(100).fadeIn(100);
+ 		$("#login-form").fadeOut(100);
+		$('#login-form-link').removeClass('active');
+		$(this).addClass('active');
+		e.preventDefault();
+	});
+
+	$('#idNew').change(function(){
+		$('#login-form').find('#correo').val($('#register-form').find('#correo').val());
+		$('#login-form').find('#password').val($('#register-form').find('#password').val());
+		$('#login-form').submit();
+	});
+
+	//$('input, select').tooltip({html:true});
+
+});
+</script>
+<style type="text/css">
+body {
+	background-image: url('/images/emethma.ml.jpg');
+	background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+    padding-top: 10px;
+}
+.panel-login {
+	border-color: #ccc;
+	-webkit-box-shadow: 0px 2px 3px 0px rgba(0,0,0,0.2);
+	-moz-box-shadow: 0px 2px 3px 0px rgba(0,0,0,0.2);
+	box-shadow: 0px 2px 3px 0px rgba(0,0,0,0.2);
+}
+.panel-login>.panel-heading {
+	color: #00415d;
+	background-color: #fff;
+	border-color: #fff;
+	text-align:center;
+}
+.panel-login>.panel-heading a{
+	text-decoration: none;
+	color: #666;
+	font-weight: bold;
+	font-size: 15px;
+	-webkit-transition: all 0.1s linear;
+	-moz-transition: all 0.1s linear;
+	transition: all 0.1s linear;
+}
+.panel-login>.panel-heading a.active{
+	color: #029f5b;
+	font-size: 18px;
+}
+.panel-login>.panel-heading hr{
+	margin-top: 10px;
+	margin-bottom: 0px;
+	clear: both;
+	border: 0;
+	height: 1px;
+	background-image: -webkit-linear-gradient(left,rgba(0, 0, 0, 0),rgba(0, 0, 0, 0.15),rgba(0, 0, 0, 0));
+	background-image: -moz-linear-gradient(left,rgba(0,0,0,0),rgba(0,0,0,0.15),rgba(0,0,0,0));
+	background-image: -ms-linear-gradient(left,rgba(0,0,0,0),rgba(0,0,0,0.15),rgba(0,0,0,0));
+	background-image: -o-linear-gradient(left,rgba(0,0,0,0),rgba(0,0,0,0.15),rgba(0,0,0,0));
+}
+.panel-login input[type="text"],.panel-login input[type="email"],.panel-login input[type="password"] {
+	height: 35px;
+	border: 1px solid #ddd;
+	font-size: 16px;
+	-webkit-transition: all 0.1s linear;
+	-moz-transition: all 0.1s linear;
+	transition: all 0.1s linear;
+}
+.panel-login input:hover,
+.panel-login input:focus {
+	outline:none;
+	-webkit-box-shadow: none;
+	-moz-box-shadow: none;
+	box-shadow: none;
+	border-color: #ccc;
+}
+.btn-login {
+	background-color: #59B2E0;
+	outline: none;
+	color: #fff;
+	font-size: 14px;
+	height: auto;
+	font-weight: normal;
+	padding: 14px 0;
+	text-transform: uppercase;
+	border-color: #59B2E6;
+}
+.btn-login:hover,
+.btn-login:focus {
+	color: #fff;
+	background-color: #53A3CD;
+	border-color: #53A3CD;
+}
+.forgot-password {
+	text-decoration: underline;
+	color: #888;
+}
+.forgot-password:hover,
+.forgot-password:focus {
+	text-decoration: underline;
+	color: #666;
+}
+
+.btn-register {
+	background-color: #1CB94E;
+	outline: none;
+	color: #fff;
+	font-size: 14px;
+	height: auto;
+	font-weight: normal;
+	padding: 14px 0;
+	text-transform: uppercase;
+	border-color: #1CB94A;
+}
+.btn-register:hover,
+.btn-register:focus {
+	color: #fff;
+	background-color: #1CA347;
+	border-color: #1CA347;
+}
+
+
+</style>
+<div class="container">
+    	<div class="row">
+			<div class="col-md-6 col-md-offset-3">
+				<div class="panel panel-login">
+					<div class="panel-heading">
+						<div class="row">
+							<div class="col-xs-12">
+								<img src="/images/emeth_logo.png" width="70%">
+							</div>
+						</div>
+						<hr>
+					</div>
+					<div class="panel-heading">
+						<div class="row">
+							<div class="col-xs-6">
+								<a href="#" class="active" id="login-form-link">Acceso</a>
+							</div>
+							<div class="col-xs-6">
+								<a href="#" id="register-form-link">Registro</a>
+							</div>
+						</div>
+						<hr>
+					</div>
+					<div class="panel-body">
+						<div class="row">
+							<div class="col-lg-12">
+								<form id="login-form" action="/login" method="post" role="form" style="display: block;">
+									<div class="form-group" align="center">
+										<input style="width:250px;" type="text" name="correo" id="correo" tabindex="1" class="form-control" placeholder="Correo" data-toggle="tooltip" title="Correo electrónico" value="">
+									</div>
+									<div class="form-group" align="center">
+										<input style="width:250px;" type="password" name="password" id="password" tabindex="2" class="form-control" placeholder="Contraseña" title="Contraseña" data-toggle="tooltip">
+									</div>
+									<div class="form-group text-center">
+										<input type="checkbox" tabindex="3" class="" name="remember" id="remember">
+										<label for="remember"> Recordar contraseña</label>
+									</div>
+									<div class="form-group">
+										<div class="row">
+											<div class="col-sm-6 col-sm-offset-3">
+												<input type="submit" name="login-submit" id="login-submit" tabindex="4" class="form-control btn btn-login" value="Entrar">
+											</div>
+										</div>
+									</div>
+									<div class="form-group">
+										<div class="row">
+											<div class="col-lg-12">
+												<div class="text-center">
+													<a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a>
+													<br /><small>Emethma 2015</small>
+												</div>
+											</div>
+										</div>
+									</div>
+								</form>
+								<!--
+								<form id="register-form" action="/api/register" method="post" role="form" style="display: none;">
+									<div class="form-group">
+										<input type="email" name="correo" required id="correo" tabindex="1" class="form-control" placeholder="Correo" value="">
+									</div>
+									<div class="form-group">
+										<input type="password" name="password" id="password" tabindex="2" class="form-control" placeholder="Contraseña">
+									</div>
+									<div class="form-group">
+										<input type="password" name="verifyPassword" id="verifyPassword" tabindex="2" class="form-control" placeholder="Repetir contraseña">
+									</div>
+									<div class="form-group">
+										<div class="row">
+											<div class="col-sm-6 col-sm-offset-3">
+												<input type="submit" name="register-submit" id="register-submit" tabindex="4" class="form-control btn btn-register" value="Registrar">
+											</div>
+										</div>
+									</div>
+								</form>
+	-->
+								<div ng-controller="ExampleController">
+								<form novalidate id="register-form" role="form" style="display: none;" name="frmCreateUser" >
+
+									<div class="col-xs-12 col-sm-6">
+										<h4 ng-hide="user.nombres">Nuevo Usuario</h4>
+										<h4 ng-show="user.nombres">Editar Usuario ( {{user.nombres}} )</h4>
+
+										<h3><small>Datos Generales</small></h3>
+
+										<span>Número de Patrocinador:</span>
+										<input required id="parentId" name="parentId" ng-model="user.parentId" type="number" style="" class="form-control" data-toggle="tooltip" title="Número proporcionado por la persona que lo invitó a Emethma" placeholder="Número de Patrocinador">
+										<div ng-show="frmCreateUser.$submitted || frmCreateUser.directo_id.$touched">
+											<label class="lblError" ng-show="frmCreateUser.directo_id.$error.required">Selecciona tu directo en el mapa</label>
+										</div>
+										<div ng-show="frmCreateUser.$submitted || frmCreateUser.parentId.$touched">
+											<label class="lblError" ng-show="frmCreateUser.parentId.$error.required">Ingresa el número de tu patrocinador.</label>
+										</div>
+										<span>Correo:</span>
+										<input required id="correo" name="correo" ng-model="user.correo" type="email" class="form-control" placeholder="Correo">
+										<div ng-show="frmCreateUser.$submitted || frmCreateUser.correo.$touched">
+											<label class="lblError" ng-show="frmCreateUser.correo.$error.required">Ingresa tu email.</label>
+											<label class="lblError" ng-show="frmCreateUser.correo.$error.email">No es un email válido.</label>
+										</div>
+										<span>Contraseña:</span>
+										<input required id="password" name="password" ng-model="user.password" type="password" class="form-control" placeholder="Contraseña">
+										<div ng-show="frmCreateUser.$submitted || frmCreateUser.password.$touched">
+											<label class="lblError" ng-show="frmCreateUser.password.$error.required">Repite tu contraseña.</label>
+											<label class="lblError" ng-show="frmCreateUser.password.$error.email">No es una contraseña valida.</label>
+										</div>
+										<span>Repetir contraseña:</span>
+										<input required id="verifyPassword" name="verifyPassword" ng-model="user.verifyPassword" compare-to="user.password" type="password" class="form-control" placeholder="Repetir Contraseña">
+										<div ng-show="frmCreateUser.$submitted || frmCreateUser.verifyPassword.$touched">
+											<label class="lblError" ng-show="frmCreateUser.verifyPassword.$error.required">Repite tu contraseña.</label>
+											<label class="lblError" ng-show="frmCreateUser.verifyPassword.$error.compareTo">Las contraseñas no coinciden.</label>
+										</div>
+
+										<span>Nombres:</span>
+										<input required id="nombres" name="nombres" ng-model="user.nombres" type="text" class="form-control" placeholder="Nombres">
+										<div ng-show="frmCreateUser.$submitted || frmCreateUser.nombres.$touched">
+											<label class="lblError" ng-show="frmCreateUser.nombres.$error.required">Ingresa los nombres</label>
+										</div>
+										<span>Apellidos:</span>
+										<input required id="apellidos" name="apellidos" ng-model="user.apellidos" type="text" class="form-control" placeholder="Apellidos">
+										<div ng-show="frmCreateUser.$submitted || frmCreateUser.apellidos.$touched">
+											<label class="lblError" ng-show="frmCreateUser.apellidos.$error.required">Ingresa los apellidos</label>
+										</div>
+										<span>Telefono:</span>
+										<input required id="telefono" name="telefono" ng-model="user.telefono" type="text" class="form-control" style="" placeholder="Teléfono">
+										<div ng-show="frmCreateUser.$submitted || frmCreateUser.telefono.$touched">
+											<label class="lblError" ng-show="frmCreateUser.telefono.$error.required">Ingresa un teléfono</label>
+										</div>
+										<span>CURP:</span>
+										<input required id="curp" name="curp" ng-model="user.curp" type="text" class="form-control" style="" placeholder="CURP">
+										<div ng-show="frmCreateUser.$submitted || frmCreateUser.curp.$touched">
+											<label class="lblError" ng-show="frmCreateUser.curp.$error.required">Ingresa un CURP válido</label>
+										</div>
+										<span>RFC:</span>
+										<input required id="rfc" name="rfc" ng-model="user.rfc" type="text" class="form-control" style="" placeholder="RFC">
+										<div ng-show="frmCreateUser.$submitted || frmCreateUser.rfc.$touched">
+											<label class="lblError" ng-show="frmCreateUser.rfc.$error.required">Ingresa un RFC</label>
+										</div>
+									</div>
+									
+									<div class="col-xs-12 col-sm-6">
+										<h3><small>Datos de Envío</small></h3>
+										<span>Estado:</span>
+										<select id="ciudad_origen" name="ciudad_origen" ng-options="ciudad.id as ciudad.ciudad for ciudad in _ciudad" ng-model="user.ciudad_origen" class="form-control selectpicker" style="">
+											<option value="">--Estado--</option>
+										</select>
+										<span>Municipio:</span>
+										<input required id="estado" name="estado" ng-model="user.estado" type="text" class="form-control" style="" placeholder="Estado">
+										<div ng-show="frmCreateUser.$submitted || frmCreateUser.estado.$touched">
+											<label class="lblError" ng-show="frmCreateUser.estado.$error.required">Ingresa un municipio</label>
+										</div>
+										<span>Calle:</span>
+										<input required id="calle" name="calle" ng-model="user.calle" type="text" class="form-control" style="" placeholder="Calle">
+										<div ng-show="frmCreateUser.$submitted || frmCreateUser.calle.$touched">
+											<label class="lblError" ng-show="frmCreateUser.calle.$error.required">Ingresa una calle</label>
+										</div>
+										<span>Número exterior:</span>
+										<input required id="no_ext" name="no_ext" ng-model="user.no_ext" type="text" class="form-control" style="" placeholder="Número exterior">
+										<div ng-show="frmCreateUser.$submitted || frmCreateUser.no_ext.$touched">
+											<label class="lblError" ng-show="frmCreateUser.no_ext.$error.required">Ingresa un número exterior</label>
+										</div>
+										<span>Número interior:</span>
+										<input  id="no_int" name="no_int" ng-model="user.no_int" type="text" class="form-control" style="" placeholder="Número interior">
+										<span>Colonia:</span>
+										<input required id="colonia" name="colonia" ng-model="user.colonia" type="text" class="form-control" style="" placeholder="Colonia">
+										<div ng-show="frmCreateUser.$submitted || frmCreateUser.colonia.$touched">
+											<label class="lblError" ng-show="frmCreateUser.colonia.$error.required">Ingresa una colonia</label>
+										</div>
+										<span>Código Postal:</span>
+										<input required id="cp" ng-required="integer" integer name="cp" min="1000" max="99999" ng-model="user.cp" type="number" class="form-control" style="" placeholder="Código Postal">
+										<div ng-show="frmCreateUser.$submitted || frmCreateUser.cp.$touched">
+											<label class="lblError" ng-show="frmCreateUser.cp.$error.number">Ingresa un código postal válido</label>
+											<label class="lblError" ng-show="frmCreateUser.cp.$error.min || frmCreateUser.cp.$error.max">Ingresa un código postal válido</label>
+										</div>
+
+										<h3><small>Datos Bancarios</small></h3>
+										<span>Banco:</span>
+										<select id="banco" name="banco" ng-options="banco.id as banco.banco for banco in _banco" ng-model="user.banco" class="form-control selectpicker">
+											<option value="">--Banco--</option>
+										</select>
+										<span>Número de Cuenta:</span>
+										<input id="numeroCuenta" name="numeroCuenta" ng-model="user.numeroCuenta" type="text" class="form-control" placeholder="Número de Cuenta">
+										<span>Número de Transferencia:</span>
+										<input id="numeroTransferencia" name="numeroTransferencia" ng-model="user.numeroTransferencia" type="text" class="form-control" placeholder="Número de Transferencia">
+									</div>
+		
+									<div class="col-xs-12" align="center">
+										<input type="checkbox" required="true" ng-model="terms" name="terms" class="btn btn-primary"> Acepto los <a href="/politica" target="blank">términos y condiciones y política de privacidad</a>
+										<br>
+										<input type="text" style="display:none;" ng-model="user.idNew" id="idNew" />
+										<input type="button" id="btnRedraw" style="display:none;" value="ReDraw">
+										<input type="button" id="btnClean" style="display:none;" ng-click="clean()" value="Reset Full Form">
+										<input type="button" id="btnReset" style="display:none;" ng-click="resetUser()" value="Reset Data">
+										<input type="button" id="btnLoad" style="display:none;" ng-click="getUser(user)" value="Load Data">
+										<input type="submit" ng-disabled="frmCreateUser.$invalid" ng-click="register(user)" class="btn btn-primary" style="border:0px; margin-top:10px;" value="Registrar">
+									</div>
+								</form>
+								</div>
+
+
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>

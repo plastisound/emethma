@@ -1,0 +1,1089 @@
+<% include header %> 
+<% include navbar %> 
+
+<script type="text/javascript">
+DEV_MODE = true;
+// TREE
+var Tree = function(node, id, children){
+    node = (node) ? node : '';
+    this.node = node;
+    this.id = id;
+    this.width = node.length;
+    this.children = (children) ? children : [];
+};
+
+Tree.prototype.__str__ = function(){
+    return this.node
+};
+
+Tree.prototype.__repr__ = function(){
+    return this.node
+};
+
+var ai_tree = 1; //Auto incrementable node
+var DrawTree = function(tree, parent, depth, number,position){
+    parent = (parent) ? parent : null;
+    depth = (depth) ? depth : 0;
+    number = (number) ? number : 1;
+    this.id = ai_tree;
+    ai_tree++;
+    this.x = -1;
+    this.node = tree.node;
+    this.y = depth;
+    this.position = position;
+    this.directos = tree.directos;
+    //this.children = [DrawTree(c, self, depth+1, i+1) for i, c in enumerate(tree.children)]
+    this.children = [];
+    for(var i in tree.children){
+        // Check L || R with var i
+        this.children.push(new DrawTree(tree.children[i],this,depth+1,i++,i) );
+    }
+    this.parent = parent;
+    this.thread = null;
+    this.mod = 0;
+    this.ancestor = this;
+    this.change = this.shift = 0;
+    this._lmost_sibling = null;
+    this.number = number;
+    this.data = [];
+
+    // Tmp Getter Solution
+    if((!this._lmost_sibling) && (this.parent!=null) && (this!=this.parent.children[0] ))
+        this.lmost_sibling = this.parent.children[0];
+}
+// Pendiente: this don't work
+Object.defineProperties(DrawTree,{
+    'lmost_sibling':{get:function(){ 
+        if((!this._lmost_sibling) && (this.parent!=null) && (this!=this.parent.children[0] ))
+            this._lmost_sibling = this.parent.children[0];
+        return this._lmost_sibling
+    } }
+});
+DrawTree.prototype.left = function(){
+    //return this.thread!=null || this.children.length>0 && this.children[0]!=null;
+    if(this.children.length>0)
+    	return this.children[0];
+    else
+    	return this.children.length;
+};
+DrawTree.prototype.right = function(){
+    //return this.thread!=null || this.children.length>0 && this.children[this.children.length-1]!=null;
+    if(this.children.length>0)
+    	return this.children[this.children.length-1];
+    else
+    	return this.children.length;
+};
+DrawTree.prototype.lbrother = function(){
+    var n = null;
+    if(this.parent){
+        for(i in this.parent.children){
+            var node = this.parent.children[i];
+            if(node==this) return n;
+            else n = node;
+        }
+    }
+    return n;
+};
+
+var buchheim = function(tree){
+    var dt = firstwalk(new DrawTree(tree));
+    var min = second_walk(dt);
+    if(min<0)
+        third_walk(dt,-min);
+    return dt;
+}
+
+var third_walk = function(tree, n){
+    //console.log('THIRD');
+    tree.x +=n;
+    for(var i in tree.children){
+        var c = tree.children[i];
+        third_walk(c,n);
+    }
+}
+
+var firstwalk = function(v, distance){
+    distance = (distance) ? distance : 1;
+    if(v.children){
+        if(v.children.length==0){
+            if(v.lmost_sibling!=null){
+                v.x = v.lbrother().x + distance;
+            }
+            else{
+                v.x = 0;
+            }
+        } else {
+            var default_ancestor = v.children[0];
+            for(var w in v.children){
+                var wobj = v.children[w];
+                firstwalk(wobj);
+                default_ancestor = apportion(wobj, default_ancestor, distance);
+            }
+            //console.log('finished v= '+v.tree+" children");
+            execute_shifts(v);
+
+            //midpoint = (v.children[0].x + v.children[-1].x) / 2
+            midpoint = parseFloat(v.children[0].x + v.children[v.children.length-1].x) / parseFloat(2);
+            ell = v.children[0];
+            arr = v.children[v.children.length-1];
+            w = v.lbrother();
+            if(w!=null){
+                v.x = w.x + distance;
+                v.mod = v.x - midpoint;
+            } else {
+                v.x = midpoint;
+            }
+        }
+    }
+    return v;
+}
+
+var apportion = function(v, default_ancestor, distance){
+    w = (v!=null && v.lbrother()) ? v.lbrother() : null;
+    if(w!=null){
+    	//in buchheim notation:
+       //i == inner; o == outer; r == right; l == left; r = +; l = -
+        vir = vor = v;
+        vil = w;
+        vol = v.lmost_sibling;
+        sir = sor = v.mod;
+        sil = vil.mod;
+        sol = vol.mod;
+        while( ((vil.right()) && (vir.left()) )){
+            vil = vil.right();
+            vir = vir.left();
+            //vol = vol.left();
+            //vor = vor.right();
+            vor.ancestor = v;
+            shift = (vil.x + sil) - (vir.x + sir) + distance;
+            if(shift>0){
+                move_subtree(ancestor(vil, v, default_ancestor), v, shift);
+                sir = sir + shift;
+                sor = sor + shift;
+            }
+            sil += vil.mod;
+            sir += vir.mod;
+            sol += vol.mod;
+            sor += vor.mod;
+        }
+        // PENDIENTE
+        /*
+        if((typeof vor !== 'undefined') && (typeof vol !== 'undefined') && (typeof vir !== 'undefined') && (typeof vil !== 'undefined') )
+        if ((vil.right()) && (!vor.right()) ){
+            vor.thread = vil.right();
+            vor.mod += sil - sor;
+        } else {
+            if ((vir.left()) && (!vol.left()) ){
+            	console.log('TREEEEES');
+                vol.thread = vir.left();
+                vol.mod += sir - sol;
+            }
+            default_ancestor = v;
+        }
+        */
+    }
+    return default_ancestor;
+}
+
+var move_subtree = function(wl, wr, shift){
+    subtrees = wr.number - wl.number;
+    //console.log(wl.tree+" is conflicted with "+ wr.tree+ ' moving '+ subtrees+ ' shift '+ shift);
+    //print wl, wr, wr.number, wl.number, shift, subtrees, shift/subtrees
+    wr.change -= shift / subtrees;
+    wr.shift += shift;
+    wl.change += shift / subtrees;
+    wr.x += shift;
+    wr.mod += shift;
+}
+    
+var execute_shifts = function(v){
+    shift = change = 0;
+    for(var i = v.children.length; i>0; i--){
+        var w = v.children[i];
+        if(w){
+	        //console.log("shift: "+ w+" "+shift+" "+w.change);
+	        w.x += shift;
+	        w.mod += shift;
+	        change += w.change;
+	        shift += w.shift + change;
+    	}
+    }
+}
+
+var ancestor = function(vil, v, default_ancestor){
+    //the relevant text is at the bottom of page 7 of
+    //"Improving Walker's Algorithm to Run in Linear Time" by Buchheim et al, (2002)
+    //http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.16.8757&rep=rep1&type=pdf
+    if( typeof v.parent.children[vil.ancestor]  != 'undefined') 
+        return vil.ancestor;
+    else
+        return default_ancestor;
+}
+
+var second_walk = function(v, m, depth, min){
+    m = (m) ? m : 0;
+    depth = (depth) ? depth : 0;
+    min = (min) ? min : null;
+    v.x += m;
+    v.y = depth;
+
+    if (min == null || v.x < min)
+        min = v.x;
+    for(i in v.children){
+        var w = v.children[i];
+        min = second_walk(w, m + v.mod, depth+1, min);
+    }
+
+
+    return min;
+
+}
+</script>
+
+<script type="text/javascript">
+// Initial selected nodes
+var parent_id, directo_id; // RaphaelJS objects
+
+window.onload = function () {
+	//rjs = Raphael("chartDiv");
+	var globalW = screen.width;
+	var globalH = screen.height;
+	//alert('width: ' + screen.width + ', height: ' + screen.height);
+	rjs = ScaleRaphael("chartDiv",globalW,globalH);
+
+	function resizePaper(){
+		var win = $(this);
+		//console.log(win.width());
+		rjs.changeSize(win.width(), win.height(), false, true);
+	}
+	rjs.changeSize(globalW, globalH);
+	//resizePaper();
+	//$(window).resize(resizePaper); 
+	rjs.scaleAll(0.85);
+
+	Raphael.fn.getByClass = function(clsname){
+        var res = [];
+        this.forEach(function(a){
+            var cls = a.node.getAttribute('class')
+			if((cls) && (cls!=null)){
+				if(cls==clsname){
+					res.push(a)
+				}
+	            /*
+	            if(cls.indexOf(clsname) != -1){
+	                res.push(a)
+	            }
+	            */
+        	}
+        })
+        return res;
+    }
+
+    Raphael.fn.getByType = function(type) {
+    	var res = [];
+        this.forEach(function(a){
+        	if (a.type == type) {
+	            res.push(a)
+        	}
+        })
+        return res;
+    }
+
+    r = 30;
+	rh = r*3;
+	rw = r*3;
+	marginW = 40;
+	marginH = 40;
+
+	var _fillColors = ['#dd635e','#d7722e','#9e5eb2','#4985bb','#e39e39','#48a39a','#57d1b7','#a33349','#269b37'];
+	//var _fillColors = ['#579532','#78286B','#8CA336','#9C344C','#B6CB66','#1C4A00','#75142B','#B478AB','#269b37'];
+	var takeFillColor = function(depth){
+		var n = Math.floor(depth/_fillColors.length);
+		return _fillColors[depth-(n*_fillColors.length)];
+	}
+
+	var animateSelector = function(selected){
+		selected.animate({opacity:0.2},800);
+		setTimeout(function(){
+			selected.animate({opacity:0.9},800);
+			setTimeout(function(){
+    			animateSelector(selected);
+    		},800);
+    	},800);
+	};
+
+	var drawt = function(root, depth){
+		// SELECTED CURVE
+	    var opacity = (root.node=='---') ? 1 : 0;
+	    //var selectStroke = (root.node=='---') ? '#5CE65C' : '#09F';
+	    var selectStroke = (root.node=='---') ? '#09F' : '#09F';
+	    var selected = rjs.rect((root.x * rw) + 14 , (depth * rh) + 6,84,84)
+			.attr({stroke:selectStroke,opacity:opacity,'stroke-width':4,r:'10',fill:'#09F','stroke-dasharray':''});
+		if(root.node=='---'){
+	    	animateSelector(selected);
+	    }
+
+	    /*
+	    var nodo = rjs.circle( (root.x * rw) + marginW+(r/2) , (depth * rh) +marginH , r)
+	    	//.attr({stroke:'#57d1b7',fill:'url("/images/profile.jpg")','stroke-width':3})
+	    	.attr({stroke:takeFillColor(depth),fill: "90-#F2F2F2-#fff",'stroke-width':4,'cursor':'pointer'})
+	    	*/
+
+		// Circle
+		var nodo = rjs.circle( (root.x * rw) + marginW+(r/2) , (depth * rh) +marginH , r)
+	    	//.attr({stroke:'#57d1b7',fill:'url("/images/profile.jpg")','stroke-width':3})
+	    	.attr({stroke:takeFillColor(depth),fill: "90-#F2F2F2-#fff",'stroke-width':4,'cursor':'pointer'})
+	    	.data('node',root)
+	    	.data('selected',selected)
+	    	.click(function(e){
+	    		// Si ya ha seleccionado ambos limpiar
+	    		if((directo_id) && (parent_id)){
+		    		directo_id.data('selected').attr({opacity:0,stroke:'#09F'});
+					directo_id = null;
+					parent_id.data('selected').attr({opacity:0,stroke:'#09F'});
+					parent_id = null;
+				}
+				  //Asignar directo y marcar posibles hijos
+    			if(!directo_id){
+    				// Eliminar nuevo
+    				if(findNode('---',trees)!==false){
+						removeNode('---',trees);
+    					redrawAll();
+
+    					opacity = (root.node=='---') ? 1 : 0;
+					    //selectStroke = (root.node=='---') ? '#5CE65C' : '#09F';
+					    selectStroke = (root.node=='---') ? '#09F' : '#09F';
+					    selected = rjs.rect((root.x * rw) + 14 , (depth * rh) + 6,84,84)
+							.attr({stroke:selectStroke,opacity:opacity,'stroke-width':4,r:'10',fill:'#09F','stroke-dasharray':''});
+					    	animateSelector(selected);
+
+    				}
+    				removeNode('---',trees);
+    				animateSelector(selected);
+
+	    			this.data('selected').attr({opacity:1,stroke:'#09F'});
+	    			directo_id = this;
+	    			$('#parentId').val('');
+	    			$('#parentId').trigger('change');
+	    			var vamos = findNode(directo_id.data('node')['node'],trees);
+	    			$('#directo_id').val(vamos['id']);
+	    			$('#directo_id').trigger('change');
+	    			// Get L || R position
+	    			//alert(this.data('node').position);
+	    			// add global directo
+	    			// Load User Data
+    				$('#btnLoad').click();
+	    			drawEnabled(root,true);
+    			} else {
+    			  // Crear hijo
+    				if(!parent_id){
+    					//if(this!=directo_id){
+    					if(this.data('enabled')){
+							this.data('selected').attr({opacity:1,stroke:'#F00'});
+							var vamos = findNode(directo_id.data('node')['node'],trees);
+			    			$('#directo_id').val(vamos['id']);
+			    			$('#directo_id').trigger('change');
+
+							parent_id = this;
+							var vamos = findNode(parent_id.data('node')['node'],trees);
+							$('#parentId').val(vamos['id']);
+							$('#parentId').trigger('change');
+							$('#btnReset').click();
+							addNode(this.data('node'));
+						} else {
+							cleanSelected();
+							drawPaper();
+			    			dt = buchheim( new DrawTree(trees) );
+							drawconn(dt, 0);
+							drawt(dt, 0);
+						}
+    					//}
+    				}
+    			}
+	    		//addNode(this.data('node')['node']);
+	    	})
+	    	.mousedown(function(e){
+	    		/*
+	    		if(e.which == 3){
+	    			removeNode(this.data('node')['node'],trees);
+	    			this.remove();
+	    			cleanSelected();
+	    			drawPaper();
+					dt = buchheim( new DrawTree(trees) );
+					drawconn(dt, 0);
+					drawt(dt, 0);
+	    		}
+	    		*/
+	    	})
+	    	.mouseover(function(e){
+	    		if(this.data('selected').attr('opacity')!=1)
+	    			this.data('selected').attr({opacity:0.99});
+	    	})
+	    	.mouseout(function(e){
+	    		if(this.data('selected').attr('opacity')!=1)
+	    			this.data('selected').attr({opacity:0});
+	    	});
+	    nodo.node.setAttribute("class",root.id);
+
+	    // Todo se dibuja aquí en base a los parametros del nodo
+	    var st = rjs.set();
+	    var c = rjs.rect((root.x * rw) + marginW+(r/2)-41 , (depth * rh) +marginH+26, r*2.8, 20)
+	    	.attr({fill:takeFillColor(depth),'stroke-width':0,r:10});
+	    var text = rjs.text((root.x * rw) + marginW+(r/2) , (depth * rh) +marginH+36 , root.node.split('@')[0] )
+	    	.attr({fill:'#FFF','font-size':13,'stroke-width':0,'font-weight':'normal'});
+	    	    // Draw directos
+	    var text2_color = ((root.directos)&&(root.directos.length>=3))?'#00F':'#999';
+	    var text2 = rjs.text((root.x * rw) + marginW+(r/2) , (depth * rh) +marginH , (root.directos)?root.directos.length:'' )
+	    	.attr({fill:text2_color,'font-size':24,'stroke-width':0,'font-weight':'bold'});
+
+	    // Group Add
+	    st.push(nodo,c,text,text2,selected);
+
+	    for(i in root.children)
+	        drawt(root.children[i], depth+1);
+
+	    // Temporal Solution: Empty Data for new item, should be on app.js not here
+	    if(root.node=='---'){
+	    	$('input[type="text"], select, textarea').val('');
+	    }
+	}
+
+	var redrawAll = function(){
+		cleanSelected();
+		drawPaper();
+		dt = buchheim( new DrawTree(trees) );
+		drawconn(dt, 0);
+		drawt(dt, 0);
+	};
+
+	var _directos = [];
+	var drawEnabled = function(root,isSelected){
+		/*
+			No permite añadir nodos donde:
+				Ya existe un binario
+				El nodo es nuevo y aún no se completa su registro
+		*/
+		if(isSelected){
+			_directos = root.directos;
+			console.log(_directos);
+		}
+		var maxnodes = 3;
+		if(root){
+			if(root['children'].length<maxnodes){
+				if(root['node']!=='---'){
+					var shape = rjs.getByClass(root['id']);
+					shape.some(function(x){
+						x.data('enabled',true)
+							.attr({'stroke-dasharray':'.'});
+					});
+				}
+			}
+		}
+		/* Funcion recursiva marca y permite la seleccion de nodos con menos de dos hijos */
+		if(root['children']){
+			root['children'].some(function(s){
+				if(s){
+					if(s['children'].length<maxnodes){
+						if(s['node']!=='---'){
+							var shape = rjs.getByClass(s['id']);
+							shape.some(function(x){
+								x.data('enabled',true)
+									.attr({'stroke-dasharray':'.'});
+							});
+						}
+					}
+					if(s['children']){
+						drawEnabled(s);
+					}
+				}
+			});
+		}
+
+		// Marcar nodos directos
+		var nodo = findNode(root['node'],trees);
+		_directos.some(function(d){
+			if(d['id']==nodo['id']){
+				var shape = rjs.getByClass(root['id']);
+				shape.some(function(x){
+					x.data('enabled',true)
+						.attr({'fill':'#C6E3FF'});
+				});
+			}
+		});
+
+	}
+
+	var cleanSelected = function(){
+		if(directo_id){
+			directo_id.data('selected').attr({opacity:0,stroke:'#09F'});
+			directo_id = null;
+		}
+		if(parent_id){
+			parent_id.data('selected').attr({opacity:0,stroke:'#09F'});
+			parent_id = null;
+		}
+	}
+
+	var drawPaper = function(){
+		rjs.clear();
+		for(var x=0; x<= globalH; x=x+10){
+			rjs.path('M 0 '+x+' L'+globalW+' '+x)
+				.attr({stroke:'#F0F0F0'});
+		}
+		for(var x=0; x<= globalW; x=x+10){
+			rjs.path('M '+x+' 0 L'+x+' '+globalH)
+				.attr({stroke:'#F0F0F0'});
+		}
+		var paper = rjs.rect(0,0,globalW,globalH)
+			.attr({fill:'#FFF',opacity:0})
+			.click(function(){
+				removeNode('---',trees);
+				$('#parentId').val(null);
+				$('#parentId').trigger('change');
+				$('#directo_id').val(null);
+				$('#directo_id').trigger('change');
+				$('#btnReset').click();
+    			redrawAll();
+			});
+	}
+
+	var drawconn = function(root, depth){
+		for(i in root.children){
+			var child = root.children[i];
+			var line = rjs.path("M"+((root.x * rw + r/2)+marginW)+" "+((depth * rh + (r/2))+marginW)+" L"+((child.x * rw + (r/2))+marginH)+" "+(((depth+1) * rh + (r/2))+marginH))
+				.attr({stroke:_fillColors[depth],'stroke-width':4});
+			drawconn(child, depth+1)
+		}
+	}
+
+	function findNode(id, currentNode) {
+	    var i,
+	        currentChild,
+	        result;
+
+	    if (id == currentNode.node) {
+	        return currentNode;
+	    } else {
+	        // Use a for loop instead of forEach to avoid nested functions
+	        // Otherwise "return" will not work properly
+	        for (i = 0; i < currentNode.children.length; i += 1) {
+	            currentChild = currentNode.children[i];
+
+	            // Search in the current child
+	            result = findNode(id, currentChild);
+
+	            // Return the result if the node has been found
+	            if (result !== false) {
+	                return result;
+	            }
+	        }
+	        // The node has not been found and we have no more options
+	        return false;
+	    }
+	}
+
+	function removeNode(id, currentNode) {
+	    var i,
+	        currentChild,
+	        result;
+	    if (id == currentNode.node) {
+	    	var cNode =currentNode;
+	    	currentNode.children.splice(0,1);
+	    	delete currentNode;
+	        return cNode;
+	    } else {
+	        // Use a for loop instead of forEach to avoid nested functions
+	        // Otherwise "return" will not work properly
+	        for (i = 0; i < currentNode.children.length; i += 1) {
+	            currentChild = currentNode.children[i];
+
+	            // Search in the current child
+	            result = removeNode(id, currentChild);
+
+	            // Return the result if the node has been found
+	            if (result !== false) {
+	            	if(currentChild['node']==result['node']){
+	            		delete currentNode.children[i];
+	            		currentNode.children.splice(i,1);
+	                	return result;
+	            	}
+	            }
+	        }
+	        // The node has not been found and we have no more options
+	        return false;
+	    }
+	}
+
+	var addNode = function(node){
+		drawPaper();
+		var arr = findNode(node['node'],trees);
+		var hijos = arr.children.length;
+		if(hijos>=2){
+			if(!node.position){
+				alert('Por favor elige a que posición deseas agregar este hijo');
+				redrawAll();
+				return false;
+			}
+			var pos = (node.parent.position) ? node.parent.position : node.position;
+		  	addNodeLast(arr,pos);
+		} else {
+		  arr.children.push(new Tree('---',-1));
+		}
+		redrawAll();
+		// Developer Mode
+		if(DEV_MODE){
+			$('#frmCreateUser').find('input[type!="button"][type!="submit"], select').each(function(){
+				$(this).val( fakeUsuario()[$(this).attr('id')] );
+				if( ($(this).attr('type')=='text') || ($(this).attr('type')=='email') )
+					$(this).trigger('change');
+			});
+			$('#btnRegistrar').click();
+		}
+	}
+	//Insertar nodo en posicion correspondiente L o R respecto a al nodo padre hasta abajo
+	var addNodeLast = function(arr,pos) {
+	  if((arr) && (pos)){
+	    if(arr.children[pos-1].children.length>=2){
+	      addNodeLast(arr.children[pos-1],pos);
+	    } else {
+	    	$('#parentId').val(arr.children[pos-1]['id']);
+			$('#parentId').trigger('change');
+			$('#btnReset').click();
+	      	arr.children[pos-1].children.push(new Tree('---',-1));
+	    }
+	  }
+	}
+
+	// Demo Tree
+	/*
+	var trees = new Tree("root",
+	    [
+	        new Tree("l1",[
+	            new Tree("l2",[
+	            	new Tree("l3"),
+	        		new Tree("l4",[
+	        			new Tree("l5"),
+						new Tree("l6",[
+							new Tree("l6"),
+							new Tree("l8")
+						])
+	        		])
+	        	]),
+	            new Tree("l9",[
+	            	//new Tree("p1")
+	            ]),
+	        ]),
+	        new Tree("r",[
+	        	new Tree("m2"),
+				new Tree("m3",[
+					new Tree("l1",[
+			            new Tree("l2",[
+			            	new Tree("x1"),
+			        		new Tree("x2",[
+			        			new Tree("x2"),
+								new Tree("x3",[
+									new Tree("m2"),
+									new Tree("m3")
+								])
+			        		])
+			        	]),
+			            new Tree("l2",[
+			            	//new Tree("p1")
+			            ]),
+			        ]),
+			        new Tree("r")
+
+				])
+	    	])
+	    ]
+	);
+	*/
+
+	var trees = new Tree("root",[]);
+	
+	var getUsers = function(){
+		$.ajax({
+			type:'get',
+			url:'/api/getUsers',
+			data: {},
+			success:function(data){
+				drawPaper();
+				trees = convertToHierarchy(data);
+				dt = buchheim( new DrawTree(trees) );
+				drawconn(dt, 0);
+				drawt(dt, 0);
+			}
+		});
+	}
+	getUsers();
+
+	drawPaper();
+	
+	function convertToHierarchy(arry)
+	{
+	    // Build the node structure
+	    var name = arry[0]['nombres'];
+	    name = (name.length>10 ) ? name.substring(0,10)+'...' : name;
+	    var rootNode = {node:name,id:arry[0]['id'], width:name.length, children:new Array(), asignados:arry[0]['asignados'],directos:arry[0]['directos']};
+	    for (var i = 0; i < arry.length; i++)
+	    {
+	        var children = arry[i];
+	        
+	        buildNodeRecursive(rootNode, children.children);
+	    }
+	    return rootNode;
+	}
+
+	var buildNodeRecursive = function(node, children)
+	{
+		var i = 0;
+		if(children)
+			children.some(function(){
+				item = children[i];
+				var name = item['nombres'];
+	    		name = (name.length>10 ) ? name.substring(0,10)+'...' : name;
+				node.children[i] = {node:name,id:item['id'], width:name, children:new Array(), asignados:item['asignados'],directos:item['directos']};
+				if(item.children)
+					buildNodeRecursive(node.children[i],item.children);
+				i++;
+			});
+	};
+
+	$('#btnRedraw').click(function(){ 
+		getUsers();
+		redrawAll(); 
+	});
+
+};
+</script>
+
+<div class="row" style="padding-top:65px;"></div>
+
+<div class="row">
+
+	<div class="col-xs-12 col-sm-12 col-lg-12" align="left">
+		<ul style="margin-left:10px;" class="nav nav-tabs">
+			<li class="active"><a data-toggle="tab" href="#home">Árbol Binario</a></li>
+			<li><a data-toggle="tab" href="#menu1">Búsqueda</a></li>
+		</ul>
+
+		<div class="tab-content">
+			<div id="home" class="tab-pane fade in active">
+				<!-- Canvas -->
+				<div style="height:500px; overflow:auto; position:relative;" class="col-xs-12 col-sm-12 col-lg-12" align="left">
+					<div id="chartDiv"></div>
+				</div>
+				<!-- TreeView -->
+				<div ng-controller="ExampleController" style="margin-left:10px;" class="col-xs-12 col-sm-12 col-lg-12 well" align="left">
+				<!-- Instructions -->
+				<div ng-show="user.directo_id == null">
+					<h4>Instrucciones</h4>
+					<ul class="list-group">
+						<li class="list-group-item">
+							<h4><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Registrar persona</h4>
+							<ul>
+								<li>Selecciona a la <b>persona directa</b> a quien se desea asignar el nuevo usuario</li>
+								<li>El sistema marcará con líneas punteadas a las personas donde el nuevo registrado puede ser <b>asignado</b>.</li>
+							</ul>
+							<!--<div align="center" width="100%"><img src="/images/ejemplo.png" height="400"/></div>-->
+						</li>
+						<li class="list-group-item">
+							<h4><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Modificar persona</h4>
+							<ul>
+								<li>Selecciona una persona en el mapa de la derecha</li>
+								<li>Modifica la información que desees en el panel lateral izquierdo</li>
+							</ul>
+						</li>
+						<li class="list-group-item">
+							<h4><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Eliminar persona</h4>
+							<ul>
+								<li>Selecciona una persona en el mapa de la derecha</li>
+								<li>Presiona el botón <b>Eliminar Usuario</b> en el panel lateral izquierdo</li>
+							</ul>
+						</li>
+					</ul>
+				</div>
+				<!-- Edit User -->
+				<form id="frmCreateUser" name="frmCreateUser" ng-show="user.directo_id != null" novalidate class="css-form">
+
+					<div class="col-xs-6">
+						<h4 ng-hide="user.nombres">Nuevo Usuario</h4>
+						<h4 ng-show="user.nombres">Editar Usuario ( {{user.nombres}} )</h4>
+						<div class="profile-header-container">   
+							<div class="profile-header-img">
+						        <img class="img-circle" src="http://cdn.zipmatch.com/app.v4/img/blank-profile.jpg.pagespeed.ce.RUbON1pyH7.jpg" />
+						        <!-- badge -->
+						        <div class="rank-label-container">
+						            <span class="label label-default rank-label">{{user.nombres}}</span>
+						        </div>
+						    </div>
+						</div> 
+
+						<strong>Código Emethma: </strong>
+						<p>{{user.id}}</p>
+						<strong>Directo de: </strong>
+						<p>{{directo.nombres}} {{directo.apellidos}}</p>
+						<strong>Asignado a: </strong>
+						<p>{{asignado.nombres}} {{asignado.apellidos}}</p>
+
+						<h3><small>Datos Generales</small></h3>
+						<input required id="id" name="id" ng-model="user.id" type="number" style="display:none;" class="form-control" placeholder="ID">
+						<input required id="directo_id" name="directo_id" ng-model="user.directo_id" type="number" style="display:none;" readonly="readonly" style="" class="form-control" placeholder="Directo ID">
+						<input required id="parentId" name="parentId" ng-model="user.parentId" type="number" style="display:none;" readonly="readonly" style="" class="form-control" placeholder="Parent ID">
+						<div ng-show="frmCreateUser.$submitted || frmCreateUser.directo_id.$touched">
+							<label class="lblError" ng-show="frmCreateUser.directo_id.$error.required">Selecciona tu directo en el mapa</label>
+						</div>
+						<div ng-show="frmCreateUser.$submitted || frmCreateUser.parentId.$touched">
+							<label class="lblError" ng-show="frmCreateUser.parentId.$error.required">Selecciona debajo de que posición deseas registar.</label>
+						</div>
+						<span>Correo:</span>
+						<input required id="correo" name="correo" ng-model="user.correo" type="email" class="form-control" placeholder="Correo">
+						<div ng-show="frmCreateUser.$submitted || frmCreateUser.correo.$touched">
+							<label class="lblError" ng-show="frmCreateUser.correo.$error.required">Ingresa tu email.</label>
+							<label class="lblError" ng-show="frmCreateUser.correo.$error.email">No es un email válido.</label>
+						</div>
+						<!--
+						<span>Contraseña:</span>
+						<input required id="password" name="password" ng-model="user.password" type="password" class="form-control" placeholder="Contraseña">
+						<div ng-show="frmCreateUser.$submitted || frmCreateUser.password.$touched">
+							<label class="lblError" ng-show="frmCreateUser.password.$error.required">Repite tu contraseña.</label>
+							<label class="lblError" ng-show="frmCreateUser.password.$error.email">No es una contraseña valida.</label>
+						</div>
+						<span>Repetir contraseña:</span>
+						<input required id="verifyPassword" name="verifyPassword" ng-model="user.verifyPassword" compare-to="user.password" type="password" class="form-control" placeholder="Repetir Contraseña">
+						<div ng-show="frmCreateUser.$submitted || frmCreateUser.verifyPassword.$touched">
+							<label class="lblError" ng-show="frmCreateUser.verifyPassword.$error.required">Repite tu contraseña.</label>
+							<label class="lblError" ng-show="frmCreateUser.verifyPassword.$error.compareTo">Las contraseñas no coinciden.</label>
+						</div>
+						-->
+						<span>Nombres:</span>
+						<input required id="nombres" name="nombres" ng-model="user.nombres" type="text" class="form-control" placeholder="Nombres">
+						<div ng-show="frmCreateUser.$submitted || frmCreateUser.nombres.$touched">
+							<label class="lblError" ng-show="frmCreateUser.nombres.$error.required">Ingresa los nombres</label>
+						</div>
+						<span>Apellidos:</span>
+						<input required id="apellidos" name="apellidos" ng-model="user.apellidos" type="text" class="form-control" placeholder="Apellidos">
+						<div ng-show="frmCreateUser.$submitted || frmCreateUser.apellidos.$touched">
+							<label class="lblError" ng-show="frmCreateUser.apellidos.$error.required">Ingresa los apellidos</label>
+						</div>
+						<span>Telefono:</span>
+						<input required id="telefono" name="telefono" ng-model="user.telefono" type="text" class="form-control" style="" placeholder="Teléfono">
+						<div ng-show="frmCreateUser.$submitted || frmCreateUser.telefono.$touched">
+							<label class="lblError" ng-show="frmCreateUser.telefono.$error.required">Ingresa un teléfono</label>
+						</div>
+						<span>CURP:</span>
+						<input required id="curp" name="curp" ng-model="user.curp" type="text" class="form-control" style="" placeholder="CURP">
+						<div ng-show="frmCreateUser.$submitted || frmCreateUser.curp.$touched">
+							<label class="lblError" ng-show="frmCreateUser.curp.$error.required">Ingresa un CURP válido</label>
+						</div>
+						<span>RFC:</span>
+						<input required id="rfc" name="rfc" ng-model="user.rfc" type="text" class="form-control" style="" placeholder="RFC">
+						<div ng-show="frmCreateUser.$submitted || frmCreateUser.rfc.$touched">
+							<label class="lblError" ng-show="frmCreateUser.rfc.$error.required">Ingresa un RFC</label>
+						</div>
+					</div>
+					
+					<div class="col-xs-6">
+						<h3><small>Datos de Envío</small></h3>
+						<span>Estado:</span>x {{user.ciudad_origen}}
+						<select id="ciudad_origen" name="ciudad_origen" ng-options="ciudad.id as ciudad.ciudad for ciudad in _ciudad" ng-model="user.ciudad_origen" class="form-control">
+							<option value="0">--Estado--</option>
+						</select>
+						<span>Municipio:</span>
+						<input required id="estado" name="estado" ng-model="user.estado" type="text" class="form-control" style="" placeholder="Estado">
+						<div ng-show="frmCreateUser.$submitted || frmCreateUser.estado.$touched">
+							<label class="lblError" ng-show="frmCreateUser.estado.$error.required">Ingresa un municipio</label>
+						</div>
+						<span>Calle:</span>
+						<input required id="calle" name="calle" ng-model="user.calle" type="text" class="form-control" style="" placeholder="Calle">
+						<div ng-show="frmCreateUser.$submitted || frmCreateUser.calle.$touched">
+							<label class="lblError" ng-show="frmCreateUser.calle.$error.required">Ingresa una calle</label>
+						</div>
+						<span>Número exterior:</span>
+						<input required id="no_ext" name="no_ext" ng-model="user.no_ext" type="text" class="form-control" style="" placeholder="Número exterior">
+						<div ng-show="frmCreateUser.$submitted || frmCreateUser.no_ext.$touched">
+							<label class="lblError" ng-show="frmCreateUser.no_ext.$error.required">Ingresa un número exterior</label>
+						</div>
+						<span>Número interior:</span>
+						<input  id="no_int" name="no_int" ng-model="user.no_int" type="text" class="form-control" style="" placeholder="Número interior">
+						<span>Colonia:</span>
+						<input required id="colonia" name="colonia" ng-model="user.colonia" type="text" class="form-control" style="" placeholder="Colonia">
+						<div ng-show="frmCreateUser.$submitted || frmCreateUser.colonia.$touched">
+							<label class="lblError" ng-show="frmCreateUser.colonia.$error.required">Ingresa una colonia</label>
+						</div>
+
+						<!--
+						<span>Código Postal:</span>
+						<input required id="cp" ng-required="integer" integer name="cp" min="1000" max="99999" ng-model="user.cp" type="number" class="form-control" style="" placeholder="Código Postal">
+						<div ng-show="frmCreateUser.$submitted || frmCreateUser.cp.$touched">
+							<label class="lblError" ng-show="frmCreateUser.cp.$error.number">Ingresa un código postal válido</label>
+							<label class="lblError" ng-show="frmCreateUser.cp.$error.min || frmCreateUser.cp.$error.max">Ingresa un código postal válido</label>
+						</div>
+						-->
+						<span>Código Postal:</span>
+						<input  id="cp" name="cp" ng-model="user.cp" type="text" class="form-control" style="" placeholder="Código Postal">
+						<div ng-show="frmCreateUser.$submitted || frmCreateUser.cp.$touched">
+							<label class="lblError" ng-show="frmCreateUser.cp.$error.number">Ingresa un código postal válido</label>
+							<label class="lblError" ng-show="frmCreateUser.cp.$error.min || frmCreateUser.cp.$error.max">Ingresa un código postal válido</label>
+						</div>
+
+						<h3><small>Datos Bancarios</small></h3>
+						<span>Banco:</span>
+						<select id="banco" name="banco" ng-options="banco.id as banco.banco for banco in _banco" ng-model="user.banco" class="form-control">
+							<option value="">--Banco--</option>
+						</select>
+						<span>Número de Cuenta:</span>
+						<input id="numeroCuenta" name="numeroCuenta" ng-model="user.numeroCuenta" type="text" class="form-control" placeholder="Número de Cuenta">
+						<span>Número de Transferencia:</span>
+						<input id="numeroTransferencia" name="numeroTransferencia" ng-model="user.numeroTransferencia" type="text" class="form-control" placeholder="Número de Transferencia">
+					</div>
+					<div class="col-xs-5" align="right">
+						<!--
+						<div class="progress" style="margin-top:20px;">
+							<div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%;">
+								<span>100%</span>
+							</div>
+						</div>
+						-->
+					</div>
+					<div class="col-xs-7" align="right">
+						<input type="button" id="btnRedraw" style="display:none;" value="ReDraw">
+						<input type="button" id="btnClean" style="display:none;" ng-click="clean()" value="Reset Full Form">
+						<input type="button" id="btnReset" style="display:none;" ng-click="resetUser()" value="Reset Data">
+						<input type="button" id="btnLoad" style="display:none;" ng-click="getUser(user)" value="Load Data">
+						<input type="button" id="btnRemove" class="btn btn-danger" style="border:0px; margin-top:10px;" ng-click="removeUser(user)" value="Eliminar Usuario">
+						<input type="submit" id="btnRegistrar" ng-click="update(user)" class="btn btn-primary" style="border:0px; margin-top:10px;" value="Registrar">
+					</div>
+				</form>
+			</div>
+			
+				<!-- End TreeView -->
+			</div>
+
+			<div id="menu1" style="margin-left:10px;" class="tab-pane fade">
+				<!-- Búsqueda Listado -->
+				<div class="panel panel-default">
+					<!-- Default panel contents -->
+					<div class="panel-heading">Listado de personas registradas en Emethma.</div>
+
+					<table id="table" data-toggle="table" data-cache="false" data-pagination="true" data-search="true" data-height="439"></table>
+				</div>
+				<!-- End Búsqueda Listado -->
+			</div>
+
+		</div>
+	</div>
+
+</div>
+
+<style type="text/css">
+/**
+ * Profile image component
+ */
+.profile-header-container{
+    margin: 0 auto;
+    text-align: center;
+}
+
+.profile-header-img {
+    padding: 14px;
+}
+
+.profile-header-img > img.img-circle {
+    width: 130px;
+    height: 130px;
+    border: 2px solid #51D2B7;
+}
+
+.profile-header {
+    margin-top: 43px;
+}
+
+/**
+ * Ranking component
+ */
+.rank-label-container {
+    margin-top: -19px;
+    margin-left: 0px;
+    /* z-index: 1000; */
+    text-align: center;
+}
+
+.label.label-default.rank-label {
+    background-color: rgb(81, 210, 183);
+    padding: 5px 10px 5px 10px;
+    border-radius: 27px;
+}
+</style>
+
+<script type="text/javascript">
+	$('#table').bootstrapTable({
+		url: '/api/searchUsers',
+		columns: [
+		{field:'persona', title: 'Persona'},
+		{field:'directo', formatter:'formatterPersona', title: 'Directo de'},
+		{field:'asignado', formatter:'formatterPersona', title: 'Asignado a'},
+		{field:'correo', title: 'Correo'},
+		{field:'telefono', title: 'Teléfono'},
+		{field:'ciudad_origen_txt', title: 'Estado'},
+		{field:'estado', title: 'Municipio'},
+		{field:'calle', title: 'Calle'},
+		{field:'no_ext', title: 'No. ext.'},
+		{field:'no_int', title: 'No. int.'},
+		{field:'colonia', title: 'Colonia'},
+		{field:'banco_txt', title: 'Banco'},	
+		]
+	});
+	function formatterPersona(value, row) {
+        return row['persona'];
+    }
+
+    var fakeUsuario = function(id){
+	  	return fakeData = {
+	  		id:id,
+	    	correo:faker.internet.email(),
+	    	nombres:faker.name.findName(),
+	    	apellidos:faker.name.lastName(),
+	    	password:'12345',
+	    	f_nacimiento:faker.date.past(),
+			ciudad_origen:22,
+			estado:'Queretaro',
+			telefono:faker.phone.phoneNumber(),
+			calle:faker.address.streetName(),
+			colonia:faker.address.streetAddress(),
+			no_ext:'22',
+			no_int:'',
+			cp:'76138',
+			rfc:'RFCDGYVgHJJG22',
+			curp:'CURPHFYNJB',
+			banco:1,
+			numeroCuenta:'4444444444',
+			numeroTransferencia:'4444444444',
+			parentId:null,
+			directo_id:null,
+			rol:1,
+			children:[]
+	  	};
+	}
+
+</script>
+
+<a href="#myModal"> Open modal</a>
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<h4 class="modal-title" id="myModalLabel"></h4>
+		</div>
+		<div class="modal-body">
+			<img id="imgCircuit" width="90%" />
+		</div>
+		<div class="modal-footer">
+			<button type="button" class="btn btn-primary">OK</button>
+		</div>
+	</div>	
+	</div>
+</div>

@@ -1,0 +1,31 @@
+<% include header %>
+<% include navbar %>
+
+<div class="row" style="margin-top:60px;">
+	<div class="col-xs-12">
+		<table id="table" data-toggle="table" data-cache="false" data-pagination="true" data-search="true" data-height="439"></table>
+	</div>
+</div>
+
+<script type="text/javascript">
+	$('#table').bootstrapTable({
+		url: '/api/searchUsers',
+		columns: [
+		{field:'persona', title: 'Persona'},
+		{field:'directo', formatter:'formatterPersona', title: 'Directo de'},
+		{field:'asignado', formatter:'formatterPersona', title: 'Asignado a'},
+		{field:'correo', title: 'Correo'},
+		{field:'telefono', title: 'Teléfono'},
+		{field:'ciudad_origen_txt', title: 'Estado'},
+		{field:'estado', title: 'Municipio'},
+		{field:'calle', title: 'Calle'},
+		{field:'no_ext', title: 'No. ext.'},
+		{field:'no_int', title: 'No. int.'},
+		{field:'colonia', title: 'Colonia'},
+		{field:'banco_txt', title: 'Banco'},	
+		]
+	});
+	function formatterPersona(value, row) {
+        return row['persona'];
+    }
+</script>

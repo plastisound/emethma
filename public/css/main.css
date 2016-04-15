@@ -1,0 +1,20 @@
+div.inline select,div.inline input, div.inline button{
+	margin-right: 10px;
+}
+.css-form input.ng-invalid.ng-touched {
+	border: 0px;
+  background-color: #ffacac;
+  color: #111;
+}
+
+.css-form input.ng-valid.ng-touched {
+	border: 0px;
+  background-color: #8cead6;
+  color: #333;
+}
+.lblError{
+	color: #D40;
+}
+input.form-control{
+	margin-top: 3px;
+}

@@ -1,0 +1,105 @@
+<style type="text/css">
+	.navbar-brand select,.navbar-brand input, .navbar-brand button{
+		margin-right: 10px;
+	}
+</style>
+<nav class="navbar navbar navbar-fixed-top bg_black" style="background-color:#F2F2F2" role="navigation">
+	<div class="container-fluid">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<!--
+			<li class="dropdown visible-xs">
+				<a href="#" class="dropdown-toggle enlinea" data-toggle="dropdown" role="button" aria-expanded="false">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse">
+					<span class="sr-only">Profile</span>
+				</button>
+				</a>
+				<ul class="dropdown-menu" style="position:absolute; right:0px; top:50px;" role="menu">
+					<li><a href="#" data-toggle="modal" data-target="#myModal">Administrador</a></li>
+					<li><a href="#" onclick="js:miPerfil();">Mi perfil</a></li>
+					<li class="divider"></li>
+					<li><a href="/logout">Salir</a></li>
+				</ul>
+			</li>
+			-->
+			<button type="button" class="navbar-toggle collapsed notificationLink" data-toggle="collapse">
+				<span class="sr-only">Notifications</span>
+				<span class="glyphicon glyphicon-cloud c_yellow" style="font-size:23px;"></span>
+				<span class="notification_count label label-danger" style="position:fixed; top:1px;"></span>
+			</button>
+			<button type="button" class="navbar-toggle collapsed messageLink" data-toggle="collapse">
+				<span class="sr-only">Mensajes</span>
+				<span class="glyphicon glyphicon-envelope c_pink" style="font-size:23px;"></span>
+				<span class="qmessage_count label label-danger" style="position:fixed; top:1px;"></span>
+			</button>
+			<!--
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#elmenu">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			-->
+			<a class="navbar-brand visible-xs" href="#" onclick="backButton();">
+				<img style="float:left;" src="/images/emeth_logo_320.png" class="" width="34">
+				<h3 style="float:left;"><%= titulo %></h3>
+			</a>
+			
+		</div>
+
+		<a class="navbar-brand hidden-xs" href="#" onclick="backButton();">
+			<img style="float:left; margin-right:10px; position:relative; top:-10px;" src="/images/emeth_logo_320.png" height="44">
+			<label style="float:left;"><%= titulo %></label>
+		</a>
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse" id="elmenu">
+			<ul class="nav navbar-nav">
+				<!--<li class="active"><a href="#">Link <span class="sr-only">(current)</span></a></li>-->
+			</ul>
+
+			<ul class="nav navbar-nav navbar-right">
+
+				<!-- Primo: Intentar que las notificaciones se muestren correctamente en dispositivos móviles (XS) -->
+				<!--
+				<li id="notification_li">
+					<a href="#" class="messageLink">
+						<span class="glyphicon glyphicon-envelope c_pink" style="font-size:23px; position:absolute; top:13px; margin-left:-27px;"></span> Contáctanos <span class="qmessage_count label label-danger" style="position:absolute; top:2px; right:1px;"></span>
+					</a>
+				</li>
+
+				<li id="notification_li" style="margin-left:20px;">
+					<a href="#" class="notificationLink">
+						<span class="glyphicon glyphicon-cloud c_yellow" style="font-size:23px; position:absolute; top:13px; margin-left:-27px;"></span> Acerca del proyecto <span class="notification_count label label-danger" style="position:absolute; top:2px; right:1px;"></span>
+					</a>
+				</li>
+				-->
+
+				<li id="notification_li">
+					<a href="#" class="notificationLink" style="margin-left:20px;" title="Este es tu ID que deberás proporcionar a las personas que invites a Emethma" onclick="alert('Este es tu ID que deberás proporcionar a las personas que invites a Emethma');">
+						<span class="glyphicon glyphicon-home c_pink" style="font-size:23px; position:absolute; top:13px; margin-left:-27px;"></span> Mi código: <b><%= myID %></b> <span class="qmessage_count label label-danger" style="position:absolute; top:2px; right:1px;"></span>
+					</a>
+				</li>
+
+				<li id="notification_li" style="margin-left:20px;">
+					<a href="/logout" class="notificationLink" style="color:#F40;">
+						<span class="glyphicon glyphicon-off c_yellow" style="font-size:23px; position:absolute; top:13px; margin-left:-27px;"></span> Cerrar Sesión <span class="notification_count label label-danger" style="position:absolute; top:2px; right:1px;"></span>
+					</a>
+				</li>
+				<!--
+				<li class="notification_li dropdown" style="margin-left:20px;">
+					<a href="#" class="dropdown-toggle enlinea" data-toggle="dropdown" role="button" aria-expanded="false">
+						<img class="nav_img_perfil img-circle" src="" style="position:absolute; top:10px; margin-left:-27px; max-height:25px;"> <span class="nav_nombre"></span> <span class="caret"></span>
+					</a>
+					<ul class="dropdown-menu" role="menu">
+						<li><a href="#" data-toggle="modal" data-target="#myModal">Administrador</a></li>
+						<li><a href="#" onclick="js:miPerfil();">Mi perfil</a></li>
+						<li class="divider"></li>
+						<li><a href="/logout">Salir</a></li>
+					</ul>
+				</li>
+				-->
+			</ul>
+		</div><!-- /.navbar-collapse -->
+	</div><!-- /.container-fluid -->
+</nav>

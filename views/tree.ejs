@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>TreeModel</title>
+    <meta name="description" content="Manipulate and traverse tree-like structures in javascript.">
+    <meta name="viewport" content="width=device-width">
+
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="span5">
+                <h1>TreeModel</h1>
+                <p>Manipulate and traverse tree-like structures in javascript.</p>
+                <a href="vendor/jnuno/TreeModel.js" download="TreeModel.js">TreeModel.js</a> | <a href="vendor/jnuno/TreeModel-min.js" download="TreeModel-min.js">TreeModel-min.js</a> (v1.0.0)
+                <p><small>These bundles are <a href="https://github.com/umdjs/umd">UMD</a> compatible (courtesy of <a href="http://browserify.org/">browserify</a>)</small></p>
+                <h5 name="parse">Create a new TreeModel</h5>
+                <div class="code" name="parse">// hint: TreeModel, tree and root are
+// globally available on this page
+tree = new TreeModel();
+
+root = tree.parse({
+    id: 1,
+    children: [
+        {
+            id: 11,
+            children: [{id: 111}]
+        },
+        {
+            id: 12,
+            children: [{id: 121}, {id: 122}]
+        },
+        {
+            id: 13
+        }
+    ]
+});</div>
+                <div id="svg"></div>
+                <div class="link-to-repo">
+                    <small>For installation and API reference <a href="https://github.com/joaonuno/tree-model-js">visit the project GitHub repository</a>.</small>
+                    <p><small><i>If your model comes flat, you may also like the <a href="https://github.com/joaonuno/flat-to-nested-js">flat-to-nested</a> module.</i></small></p>
+                </div>
+                <a class="twitter" href="https://twitter.com/jnuno_com"><img width="20" height="20" src="images/twitter.png" />jnuno_com</a>
+            </div>
+            <div class="span7">
+                <h5>Find the first node that matches a predicate</h5>
+                <div class="code" data-fn="first" data-walk>var node12 = root.first(function (node) {
+    return node.model.id === 12;
+});</div>
+                <hr />
+                <h5>Find all nodes that match a predicate</h5>
+                <div class="code" data-fn="all" data-walk>var nodesGt100 = root.all(function (node) {
+    return node.model.id > 100;
+});</div>
+                <hr />
+                <h5>Traverse the tree</h5>
+                <div class="code" data-fn="walk" data-walk>root.walk(function (node) {
+    // Halt the traversal by returning false
+    if (node.model.id === 121) return false;
+});</div>
+                <hr />
+                <h5>Drop a node</h5>
+                <div class="code" data-fn="drop">// Dropping a node returns the node itself
+node12.drop();</div>
+                <hr />
+                <h5>Add a node</h5>
+                <div class="code" data-fn="addChild">// Parse the new node
+node123 = tree.parse({id: 123, children: [{id: 1231}]});
+// Add it to the parent
+node12.addChild(node123);</div>
+<hr />
+                <h5>Get a node's path</h5>
+                <div class="code" data-fn="getPath">node122.getPath();
+// [&lt;node 1&gt;, &lt;node 12&gt;, &lt;node 122&gt;]</div>
+            </div>
+        </div>
+    </div>
+    <a href="https://github.com/joaonuno/tree-model-js"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/bower_components/treemodel/TreeModel-min.js"></script>
+    <script src="/main.js"></script>
+</body>
+</html>
+
