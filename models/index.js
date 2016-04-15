@@ -10,7 +10,7 @@ require('sequelize-hierarchy')(Sequelize);
 if (process.env.NODE_ENV == 'production'){
   console.log('Production');
   sequelize = new Sequelize('base_de_datos', 'usuario', 'password', {
-    host: '127.10.80.3:3306', 
+    host: '187.144.141.93', 
     dialect:  'mysql',
     logging: false,
     protocol: 'mysql',
@@ -18,8 +18,8 @@ if (process.env.NODE_ENV == 'production'){
   });
 } else {
   console.log('Development');
-  sequelize = new Sequelize('nodejs', 'admin12hiXGS', '9Hb5QpHc3JUl', {
-    host: 'localhost',
+  sequelize = new Sequelize('kbufojdb_eme', 'kbufojdb_emdbusr', 'Vpyn8imcB&p@', {
+    host: '187.144.141.93',
     dialect:  'mysql',
     protocol: 'mysql',
     logging: false,
