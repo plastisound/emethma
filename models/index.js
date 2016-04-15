@@ -19,7 +19,7 @@ if (process.env.NODE_ENV == 'production'){
 } else {
   console.log('Development');
   sequelize = new Sequelize('kbufojdb_eme', 'kbufojdb_emdbusr', 'Vpyn8imcB&p@', {
-    host: '187.144.141.93:3306',
+    host: '',
     dialect:  'mysql',
     protocol: 'mysql',
     logging: false,
