@@ -1,6 +1,5 @@
 var express = require('express');
-var faker = require('faker');
-var Faker = require('Faker');
+var faker = require('./faker');
 // Body Parser
 bodyParser = require('body-parser');
 
